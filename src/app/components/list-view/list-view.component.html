@@ -1,0 +1,72 @@
+<div class="list-view" role="main" aria-label="Earthquake list">
+
+  <!-- Header bar -->
+  <div class="list-header">
+    <span class="list-count" role="status" aria-live="polite">
+      <ng-container *ngIf="!loading; else countLoading">
+        {{ earthquakes.length | number }} event{{ earthquakes.length !== 1 ? 's' : '' }}
+      </ng-container>
+      <ng-template #countLoading>Loading…</ng-template>
+    </span>
+
+    <div class="sort-control" role="group" aria-label="Sort earthquakes">
+      <span class="sort-label">Sort:</span>
+      <button class="sort-btn" [class.active]="sortKey === 'time'"
+        (click)="setSort('time')" aria-pressed="{{ sortKey === 'time' }}">Recent</button>
+      <button class="sort-btn" [class.active]="sortKey === 'magnitude'"
+        (click)="setSort('magnitude')" aria-pressed="{{ sortKey === 'magnitude' }}">Magnitude</button>
+    </div>
+  </div>
+
+  <!-- Loading skeleton -->
+  <div *ngIf="loading && !earthquakes.length" class="list-skeletons" aria-hidden="true">
+    <div class="skeleton-item" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading && !earthquakes.length" class="list-empty" role="status">
+    <span class="empty-icon" aria-hidden="true">🔍</span>
+    <p>No earthquakes match your filters.</p>
+    <p class="empty-sub">Try widening the date range or magnitude range.</p>
+  </div>
+
+  <!-- Earthquake rows -->
+  <ul class="list-items" role="list" *ngIf="earthquakes.length">
+    <li *ngFor="let eq of earthquakes; trackBy: trackById"
+        class="list-item"
+        [class.selected]="eq.id === selectedId"
+        (click)="onItemClick(eq)"
+        (keydown.enter)="onItemClick(eq)"
+        (keydown.space)="onItemClick(eq)"
+        tabindex="0"
+        role="button"
+        [attr.aria-label]="'Magnitude ' + eq.magnitude + ' earthquake at ' + eq.place + ', ' + (eq.time | timeAgo)"
+        [attr.aria-pressed]="eq.id === selectedId">
+
+      <!-- Magnitude badge -->
+      <div class="item-mag" [class]="getMagClass(eq.magnitude)" aria-hidden="true">
+        <span class="mag-dot"></span>
+        <span class="mag-val">M{{ eq.magnitude | number:'1.1-1' }}</span>
+      </div>
+
+      <!-- Details -->
+      <div class="item-details">
+        <span class="item-place">{{ eq.place }}</span>
+        <span class="item-meta">
+          <span class="item-depth" *ngIf="eq.depth != null">{{ eq.depth }}km depth</span>
+          <span *ngIf="eq.depth != null" class="meta-sep" aria-hidden="true">·</span>
+          <time [dateTime]="eq.time" class="item-time" [title]="eq.time | date:'medium'">
+            {{ eq.time | timeAgo }}
+          </time>
+        </span>
+      </div>
+
+      <!-- Map link -->
+      <button class="item-map-btn" (click)="onItemClick(eq); $event.stopPropagation()"
+        aria-label="Zoom map to {{ eq.place }}" tabindex="-1">
+        → Map
+      </button>
+    </li>
+  </ul>
+
+</div>

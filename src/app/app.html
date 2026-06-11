@@ -1,0 +1,20 @@
+<div class="app-shell">
+  <app-header></app-header>
+
+  <div class="app-body">
+    <div class="sidebar-backdrop"
+         [class.visible]="sidebarOpen$ | async"
+         (click)="stateService.setSidebarOpen(false)"
+         aria-hidden="true">
+    </div>
+
+    <app-sidebar></app-sidebar>
+
+    <main class="main-content">
+      <app-map-view  *ngIf="(viewMode$ | async) === 'map'"></app-map-view>
+      <app-list-view *ngIf="(viewMode$ | async) === 'list'"></app-list-view>
+    </main>
+  </div>
+
+  <app-status-bar></app-status-bar>
+</div>

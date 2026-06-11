@@ -1,0 +1,48 @@
+<div class="map-wrapper" role="main" aria-label="Earthquake map">
+
+  <!-- Loading overlay -->
+  <div class="map-loading" *ngIf="loading$ | async" role="status" aria-live="polite">
+    <div class="spinner"></div>
+    <span>Loading earthquakes…</span>
+  </div>
+
+  <!-- No key placeholder -->
+  <div class="map-no-key" *ngIf="!hasKey">
+    <div class="no-key-card">
+      <div class="no-key-icon" aria-hidden="true">🗺</div>
+      <h2>Azure Maps Key Required</h2>
+      <p>Add your Azure Maps subscription key to <code>src/environments/environment.ts</code> to enable the interactive map.</p>
+      <code class="no-key-snippet">azureMapsKey: 'YOUR_KEY_HERE'</code>
+      <p class="no-key-sub">The list view and all filters are fully functional without a map key.</p>
+    </div>
+  </div>
+
+  <!-- Map container -->
+  <div #mapContainer class="map-container" [class.hidden]="!hasKey"
+    aria-label="Interactive earthquake map" role="application"
+    tabindex="0"></div>
+
+  <!-- Zoom controls (top-left) -->
+  <div class="map-controls map-controls--zoom" *ngIf="hasKey && mapReady" role="group" aria-label="Zoom controls">
+    <button class="map-ctrl-btn" (click)="zoomIn()" aria-label="Zoom in">+</button>
+    <button class="map-ctrl-btn" (click)="fitToData()" title="Fit to data" aria-label="Fit map to data">⊡</button>
+    <button class="map-ctrl-btn" (click)="zoomOut()" aria-label="Zoom out">−</button>
+  </div>
+
+  <!-- Style + feature controls (bottom-left) -->
+  <div class="map-controls map-controls--style" *ngIf="hasKey && mapReady" role="group" aria-label="Map style controls">
+    <button class="map-style-btn" [class.active]="selectedStyle === 'road'" (click)="setMapStyle('road')" aria-pressed="{{ selectedStyle === 'road' }}">
+      🗺 Standard
+    </button>
+    <button class="map-style-btn" [class.active]="selectedStyle === 'night'" (click)="setMapStyle('night')" aria-pressed="{{ selectedStyle === 'night' }}">
+      🌑 Dark
+    </button>
+    <button class="map-style-btn" [class.active]="selectedStyle === 'satellite_road_labels'" (click)="setMapStyle('satellite_road_labels')" aria-pressed="{{ selectedStyle === 'satellite_road_labels' }}">
+      🛰 Satellite
+    </button>
+    <button class="map-style-btn heatmap-btn" [class.active]="heatmapEnabled" (click)="toggleHeatmap()" aria-pressed="{{ heatmapEnabled }}">
+      🔥 Heatmap
+    </button>
+  </div>
+
+</div>

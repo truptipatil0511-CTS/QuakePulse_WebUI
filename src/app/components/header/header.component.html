@@ -1,0 +1,52 @@
+<header class="app-header" role="banner">
+  <div class="header-brand">
+    <button class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+      <span class="hamburger-icon">&#9776;</span>
+    </button>
+    <div class="brand-logo" aria-label="QuakePulse home">
+      <span class="brand-icon">🌍</span>
+      <span class="brand-name">QuakePulse</span>
+    </div>
+  </div>
+
+  <div class="header-search">
+    <div class="search-wrapper" role="search">
+      <span class="search-icon" aria-hidden="true">&#128269;</span>
+      <input
+        type="search"
+        class="search-input"
+        placeholder="Search location..."
+        [(ngModel)]="locationQuery"
+        (ngModelChange)="onLocationSearch($event)"
+        aria-label="Search earthquake location"
+        autocomplete="off"
+      />
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <div class="live-indicator" [class.loading]="loading$ | async" aria-label="Data status">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span class="live-label">{{ (loading$ | async) ? 'Loading...' : 'Live' }}</span>
+    </div>
+
+    <button
+      class="icon-btn refresh-btn"
+      (click)="onRefresh()"
+      [disabled]="loading$ | async"
+      title="Refresh data"
+      aria-label="Refresh earthquake data"
+    >
+      <span class="icon" [class.spin]="loading$ | async" aria-hidden="true">&#8635;</span>
+    </button>
+
+    <button
+      class="icon-btn theme-toggle"
+      (click)="toggleTheme()"
+      [title]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+      [attr.aria-label]="(theme$ | async) === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+    >
+      <span aria-hidden="true">{{ (theme$ | async) === 'dark' ? '☀' : '🌙' }}</span>
+    </button>
+  </div>
+</header>

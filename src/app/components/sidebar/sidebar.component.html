@@ -1,0 +1,133 @@
+<aside class="sidebar" [class.collapsed]="!isOpen" role="complementary" aria-label="Filters and statistics">
+
+  <div class="sidebar-inner">
+    <!-- ── Filters ─────────────────────────── -->
+    <section class="sidebar-section" aria-labelledby="filter-heading">
+      <div class="section-header">
+        <h2 id="filter-heading" class="section-title">Filters</h2>
+        <button class="btn-text" (click)="resetFilters()" aria-label="Reset all filters">Reset</button>
+      </div>
+
+      <form [formGroup]="filterForm" novalidate>
+
+        <!-- Date Range -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <span class="filter-icon" aria-hidden="true">📅</span> Date Range
+          </label>
+          <div class="date-presets">
+            <button *ngFor="let p of presets" type="button" class="preset-btn"
+              (click)="applyPreset(p.days)">{{ p.label }}</button>
+          </div>
+          <div class="date-inputs">
+            <input type="date" formControlName="startDate" class="date-input"
+              aria-label="Start date" [max]="filterForm.get('endDate')?.value" />
+            <span class="date-sep" aria-hidden="true">→</span>
+            <input type="date" formControlName="endDate" class="date-input"
+              aria-label="End date" [min]="filterForm.get('startDate')?.value" />
+          </div>
+        </div>
+
+        <!-- Magnitude -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <span class="filter-icon" aria-hidden="true">📊</span> Magnitude
+          </label>
+          <div class="mag-display">
+            <span class="mag-badge" [class]="getMagClass(minMag)">M{{ minMag | number:'1.1-1' }}</span>
+            <span class="mag-range-sep">—</span>
+            <span class="mag-badge" [class]="getMagClass(maxMag)">M{{ maxMag | number:'1.1-1' }}</span>
+          </div>
+          <div class="range-group">
+            <span class="range-label">Min</span>
+            <input type="range" formControlName="minMagnitude"
+              min="0" max="10" step="0.5" class="range-input"
+              aria-label="Minimum magnitude" />
+            <span class="range-val">{{ minMag }}</span>
+          </div>
+          <div class="range-group">
+            <span class="range-label">Max</span>
+            <input type="range" formControlName="maxMagnitude"
+              min="0" max="10" step="0.5" class="range-input"
+              aria-label="Maximum magnitude" />
+            <span class="range-val">{{ maxMag }}</span>
+          </div>
+        </div>
+
+        <!-- Location -->
+        <div class="filter-group">
+          <label class="filter-label" for="location-filter">
+            <span class="filter-icon" aria-hidden="true">📍</span> Location
+          </label>
+          <input id="location-filter" type="search" formControlName="location"
+            placeholder="Filter by region…" class="text-input"
+            aria-label="Filter by location" autocomplete="off" />
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ── View Toggle ────────────────────── -->
+    <section class="sidebar-section view-toggle-section" aria-label="View mode">
+      <div class="view-toggle" role="group" aria-label="Select view mode">
+        <button class="view-btn" [class.active]="viewMode === 'map'"
+          (click)="setViewMode('map')" aria-pressed="{{ viewMode === 'map' }}">
+          <span aria-hidden="true">🗺</span> Map
+        </button>
+        <button class="view-btn" [class.active]="viewMode === 'list'"
+          (click)="setViewMode('list')" aria-pressed="{{ viewMode === 'list' }}">
+          <span aria-hidden="true">☰</span> List
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Summary Stats ──────────────────── -->
+    <section class="sidebar-section" aria-labelledby="stats-heading">
+      <h2 id="stats-heading" class="section-title">Summary</h2>
+      <div class="stats-grid">
+        <div class="stat-card" role="status" aria-label="Total earthquakes">
+          <span class="stat-label">Total Events</span>
+          <span class="stat-value">{{ stats.total | number }}</span>
+        </div>
+        <div class="stat-card" role="status" aria-label="Highest magnitude">
+          <span class="stat-label">Highest Mag.</span>
+          <span class="stat-value" [class]="getMagClass(stats.highestMagnitude)">
+            M{{ stats.highestMagnitude | number:'1.1-1' }}
+          </span>
+        </div>
+        <div class="stat-card" role="status" aria-label="Last activity">
+          <span class="stat-label">Last Activity</span>
+          <span class="stat-value stat-time">{{ stats.lastActivity | timeAgo }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Legend ─────────────────────────── -->
+    <section class="sidebar-section" aria-labelledby="legend-heading">
+      <h2 id="legend-heading" class="section-title">Legend</h2>
+      <ul class="legend-list" role="list">
+        <li class="legend-item">
+          <span class="legend-dot minor" aria-hidden="true"></span>
+          <span class="legend-range">&lt; 3.0</span>
+          <span class="legend-desc">Minor</span>
+        </li>
+        <li class="legend-item">
+          <span class="legend-dot moderate" aria-hidden="true"></span>
+          <span class="legend-range">3.0 – 4.9</span>
+          <span class="legend-desc">Moderate</span>
+        </li>
+        <li class="legend-item">
+          <span class="legend-dot strong" aria-hidden="true"></span>
+          <span class="legend-range">5.0 – 6.9</span>
+          <span class="legend-desc">Strong</span>
+        </li>
+        <li class="legend-item">
+          <span class="legend-dot major" aria-hidden="true"></span>
+          <span class="legend-range">≥ 7.0</span>
+          <span class="legend-desc">Major</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+</aside>

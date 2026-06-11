@@ -1,0 +1,17 @@
+<footer class="status-bar" role="contentinfo" aria-label="Data status">
+  <span class="status-source">Source: USGS Earthquake Feed</span>
+
+  <button class="status-updated" (click)="refresh()" [disabled]="loading"
+    [attr.aria-label]="'Last updated ' + (lastUpdated | date:'HH:mm') + ', click to refresh'">
+    <ng-container *ngIf="lastUpdated; else neverUpdated">
+      Last updated: {{ lastUpdated | date:'HH:mm' }} UTC
+    </ng-container>
+    <ng-template #neverUpdated>Not yet loaded</ng-template>
+  </button>
+
+  <div class="status-indicator" [class]="statusClass" role="status"
+    [attr.aria-label]="statusClass === 'live' ? 'Data is live' : statusClass === 'stale' ? 'Data may be stale' : 'Offline'">
+    <span class="status-dot" aria-hidden="true"></span>
+    <span class="status-text">{{ statusClass === 'loading' ? 'Updating…' : statusClass === 'live' ? 'Live' : statusClass === 'stale' ? 'Stale' : 'Offline' }}</span>
+  </div>
+</footer>
