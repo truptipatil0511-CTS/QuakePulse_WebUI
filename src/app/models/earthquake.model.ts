@@ -9,7 +9,12 @@ export interface Earthquake {
   place: string;
   time: string;
   coordinates: Coordinates;
-  depth?: number;
+  /**
+   * Depth of the epicenter below ground, in kilometers.
+   * Backend extracts this from USGS `geometry.coordinates[2]`.
+   * Always present in API responses (zero fallback when USGS omits it).
+   */
+  depth: number;
   url?: string;
 }
 
