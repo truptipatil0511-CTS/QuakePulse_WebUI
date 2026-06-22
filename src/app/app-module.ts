@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule, DatePipe } from '@angular/common';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
@@ -34,6 +35,7 @@ import { TimeAgoPipe }        from './pipes/time-ago.pipe';
     ReactiveFormsModule,
     FormsModule,
     AppRoutingModule,
+    ScrollingModule,
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),

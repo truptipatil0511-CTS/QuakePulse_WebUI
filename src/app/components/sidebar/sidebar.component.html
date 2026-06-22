@@ -34,9 +34,9 @@
             <span class="filter-icon" aria-hidden="true">📊</span> Magnitude
           </label>
           <div class="mag-display">
-            <span class="mag-badge" [class]="getMagClass(minMag)">M{{ minMag | number:'1.1-1' }}</span>
+            <span class="mag-badge" [class]="minMag | magnitudeClass">M{{ minMag | number:'1.1-1' }}</span>
             <span class="mag-range-sep">—</span>
-            <span class="mag-badge" [class]="getMagClass(maxMag)">M{{ maxMag | number:'1.1-1' }}</span>
+            <span class="mag-badge" [class]="maxMag | magnitudeClass">M{{ maxMag | number:'1.1-1' }}</span>
           </div>
           <div class="range-group">
             <span class="range-label">Min</span>
@@ -91,7 +91,7 @@
         </div>
         <div class="stat-card" role="status" aria-label="Highest magnitude">
           <span class="stat-label">Highest Mag.</span>
-          <span class="stat-value" [class]="getMagClass(stats.highestMagnitude)">
+          <span class="stat-value" [class]="stats.highestMagnitude | magnitudeClass">
             M{{ stats.highestMagnitude | number:'1.1-1' }}
           </span>
         </div>

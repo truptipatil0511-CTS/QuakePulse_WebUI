@@ -6,43 +6,70 @@
     <span>Loading earthquakes…</span>
   </div>
 
-  <!-- No key placeholder -->
-  <div class="map-no-key" *ngIf="!hasKey">
-    <div class="no-key-card">
-      <div class="no-key-icon" aria-hidden="true">🗺</div>
-      <h2>Azure Maps Key Required</h2>
-      <p>Add your Azure Maps subscription key to <code>src/environments/environment.ts</code> to enable the interactive map.</p>
-      <code class="no-key-snippet">azureMapsKey: 'YOUR_KEY_HERE'</code>
-      <p class="no-key-sub">The list view and all filters are fully functional without a map key.</p>
+  <!-- Initialisation error (rare — bad tile URL, offline, etc.) -->
+  <div class="map-init-error" *ngIf="initError" role="alert">
+    <div class="init-error-card">
+      <div class="init-error-icon" aria-hidden="true">⚠️</div>
+      <h2>Map failed to load</h2>
+      <p>{{ initError }}</p>
+      <p class="init-error-sub">Check your network connection and refresh the page.</p>
     </div>
   </div>
 
-  <!-- Map container -->
-  <div #mapContainer class="map-container" [class.hidden]="!hasKey"
-    aria-label="Interactive earthquake map" role="application"
-    tabindex="0"></div>
+  <!-- Map container — fills wrapper, MapLibre auto-resizes via ResizeObserver -->
+  <div #mapContainer class="map-container"
+       role="application"
+       tabindex="0"
+       aria-label="Interactive earthquake map. Use arrow keys to pan, plus and minus to zoom."></div>
 
-  <!-- Zoom controls (top-left) -->
-  <div class="map-controls map-controls--zoom" *ngIf="hasKey && mapReady" role="group" aria-label="Zoom controls">
+  <!-- Zoom controls (top-left, floating) -->
+  <div class="map-controls map-controls--zoom" *ngIf="mapReady" role="group" aria-label="Zoom controls">
     <button class="map-ctrl-btn" (click)="zoomIn()" aria-label="Zoom in">+</button>
-    <button class="map-ctrl-btn" (click)="fitToData()" title="Fit to data" aria-label="Fit map to data">⊡</button>
+    <button class="map-ctrl-btn" (click)="fitToData()" title="Fit to data" aria-label="Fit map to visible earthquakes">⊡</button>
     <button class="map-ctrl-btn" (click)="zoomOut()" aria-label="Zoom out">−</button>
   </div>
 
-  <!-- Style + feature controls (bottom-left) -->
-  <div class="map-controls map-controls--style" *ngIf="hasKey && mapReady" role="group" aria-label="Map style controls">
-    <button class="map-style-btn" [class.active]="selectedStyle === 'road'" (click)="setMapStyle('road')" aria-pressed="{{ selectedStyle === 'road' }}">
+  <!-- Style + heatmap controls (bottom-left, floating) -->
+  <div class="map-controls map-controls--style" *ngIf="mapReady" role="group" aria-label="Map style controls">
+    <button class="map-style-btn" [class.active]="selectedStyle === 'road'"
+            (click)="setMapStyle('road')"
+            [attr.aria-pressed]="selectedStyle === 'road'">
       🗺 Standard
     </button>
-    <button class="map-style-btn" [class.active]="selectedStyle === 'night'" (click)="setMapStyle('night')" aria-pressed="{{ selectedStyle === 'night' }}">
+    <button class="map-style-btn" [class.active]="selectedStyle === 'night'"
+            (click)="setMapStyle('night')"
+            [attr.aria-pressed]="selectedStyle === 'night'">
       🌑 Dark
     </button>
-    <button class="map-style-btn" [class.active]="selectedStyle === 'satellite_road_labels'" (click)="setMapStyle('satellite_road_labels')" aria-pressed="{{ selectedStyle === 'satellite_road_labels' }}">
+    <button class="map-style-btn" [class.active]="selectedStyle === 'satellite_road_labels'"
+            (click)="setMapStyle('satellite_road_labels')"
+            [attr.aria-pressed]="selectedStyle === 'satellite_road_labels'">
       🛰 Satellite
     </button>
-    <button class="map-style-btn heatmap-btn" [class.active]="heatmapEnabled" (click)="toggleHeatmap()" aria-pressed="{{ heatmapEnabled }}">
+    <button class="map-style-btn heatmap-btn" [class.active]="heatmapEnabled"
+            (click)="toggleHeatmap()"
+            [attr.aria-pressed]="heatmapEnabled">
       🔥 Heatmap
     </button>
+  </div>
+
+  <!-- Heatmap legend (only while heatmap is on) — explains the dual encoding:
+       hue = magnitude category, light→dark = event density. -->
+  <div class="map-heatmap-legend" *ngIf="mapReady && heatmapEnabled"
+       role="note" aria-label="Heatmap legend">
+    <div class="hl-title">Heatmap key</div>
+    <p class="hl-sub"><strong>Colour</strong> = magnitude · <strong>shade</strong> = density</p>
+    <ul class="hl-bands" role="list">
+      <li><span class="hl-swatch minor" aria-hidden="true"></span><span class="hl-label">&lt; 3.0 Minor</span></li>
+      <li><span class="hl-swatch moderate" aria-hidden="true"></span><span class="hl-label">3.0–4.9 Moderate</span></li>
+      <li><span class="hl-swatch strong" aria-hidden="true"></span><span class="hl-label">5.0–6.9 Strong</span></li>
+      <li><span class="hl-swatch major" aria-hidden="true"></span><span class="hl-label">≥ 7.0 Major</span></li>
+    </ul>
+    <div class="hl-density" aria-hidden="true">
+      <span class="hl-density-label">low</span>
+      <span class="hl-density-bar"></span>
+      <span class="hl-density-label">high density</span>
+    </div>
   </div>
 
 </div>

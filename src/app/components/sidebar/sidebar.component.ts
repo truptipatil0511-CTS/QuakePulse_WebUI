@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { AppStateService } from '../../services/app-state.service';
 import { EarthquakeService } from '../../services/earthquake.service';
 import { EarthquakeFilters, EarthquakeStats, ViewMode } from '../../models/earthquake.model';
@@ -10,7 +10,8 @@ import { EarthquakeFilters, EarthquakeStats, ViewMode } from '../../models/earth
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SidebarComponent implements OnInit, OnDestroy {
   filterForm!: FormGroup;
@@ -28,7 +29,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     public stateService: AppStateService,
-    public earthquakeService: EarthquakeService
+    public earthquakeService: EarthquakeService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -41,24 +43,31 @@ export class SidebarComponent implements OnInit, OnDestroy {
       location: [f.location]
     });
 
+    // No debounce here — EarthquakeService debounces filters$ centrally
+    // (single debounce point). Patching state on each change is cheap; the
+    // service collapses rapid changes and dedupes identical filter values.
     this.filterForm.valueChanges.pipe(
-      debounceTime(400),
-      distinctUntilChanged(),
       takeUntil(this.destroy$)
     ).subscribe((val: EarthquakeFilters) => {
       const min = Math.min(val.minMagnitude, val.maxMagnitude);
       const max = Math.max(val.minMagnitude, val.maxMagnitude);
       this.stateService.updateFilters({ ...val, minMagnitude: min, maxMagnitude: max });
+      // Under OnPush, reactive-form value changes do not mark this component
+      // dirty, so the displayed filter values (minMag/maxMag labels, date
+      // min/max constraints, badges) would render stale. Force a check.
+      this.cdr.markForCheck();
     });
 
+    // markForCheck() required under OnPush — these fields are assigned from
+    // subscriptions, which OnPush does not pick up automatically.
     this.earthquakeService.stats$.pipe(takeUntil(this.destroy$))
-      .subscribe(s => this.stats = s);
+      .subscribe(s => { this.stats = s; this.cdr.markForCheck(); });
 
     this.stateService.viewMode$.pipe(takeUntil(this.destroy$))
-      .subscribe(v => this.viewMode = v);
+      .subscribe(v => { this.viewMode = v; this.cdr.markForCheck(); });
 
     this.stateService.sidebarOpen$.pipe(takeUntil(this.destroy$))
-      .subscribe(open => this.isOpen = open);
+      .subscribe(open => { this.isOpen = open; this.cdr.markForCheck(); });
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
@@ -90,11 +99,4 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   get minMag(): number { return this.filterForm.get('minMagnitude')?.value ?? 0; }
   get maxMag(): number { return this.filterForm.get('maxMagnitude')?.value ?? 10; }
-
-  getMagClass(mag: number): string {
-    if (mag < 3) return 'minor';
-    if (mag < 5) return 'moderate';
-    if (mag < 7) return 'strong';
-    return 'major';
-  }
 }

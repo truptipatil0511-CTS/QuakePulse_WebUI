@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { EarthquakeService } from '../../services/earthquake.service';
@@ -11,7 +11,8 @@ type SortKey = 'time' | 'magnitude';
   selector: 'app-list-view',
   templateUrl: './list-view.component.html',
   styleUrls: ['./list-view.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListViewComponent implements OnInit, OnDestroy {
   earthquakes: Earthquake[] = [];
@@ -22,20 +23,24 @@ export class ListViewComponent implements OnInit, OnDestroy {
 
   constructor(
     public earthquakeService: EarthquakeService,
-    public stateService: AppStateService
+    public stateService: AppStateService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    // markForCheck() required under OnPush — these fields are assigned from
+    // subscriptions, which OnPush does not pick up automatically.
     this.earthquakeService.earthquakes$.pipe(takeUntil(this.destroy$))
       .subscribe(data => {
         this.earthquakes = this.sort(data, this.sortKey);
+        this.cdr.markForCheck();
       });
 
     this.earthquakeService.loading$.pipe(takeUntil(this.destroy$))
-      .subscribe(l => this.loading = l);
+      .subscribe(l => { this.loading = l; this.cdr.markForCheck(); });
 
     this.stateService.selected$.pipe(takeUntil(this.destroy$))
-      .subscribe(eq => this.selectedId = eq?.id ?? null);
+      .subscribe(eq => { this.selectedId = eq?.id ?? null; this.cdr.markForCheck(); });
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
@@ -48,13 +53,6 @@ export class ListViewComponent implements OnInit, OnDestroy {
   onItemClick(eq: Earthquake): void {
     this.stateService.zoomToEarthquake(eq);
     this.stateService.selectEarthquake(eq);
-  }
-
-  getMagClass(mag: number): string {
-    if (mag < 3) return 'minor';
-    if (mag < 5) return 'moderate';
-    if (mag < 7) return 'strong';
-    return 'major';
   }
 
   trackById(_: number, eq: Earthquake): string { return eq.id; }

@@ -1,7 +1,21 @@
+// The component host is a flex child of .main-content (display:flex, column).
+// It must grow to fill that column, otherwise .list-view's height:100% has no
+// definite parent height to resolve against — which collapses the CDK
+// virtual-scroll viewport (flex:1) to 0px and renders NO rows. (Mirrors the
+// :host fill already on map-view.)
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
 .list-view {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;          // allow the flex child (viewport) to size correctly
   overflow: hidden;
   background: var(--bg-primary);
 }
@@ -53,17 +67,22 @@
 
 // ── List ─────────────────────────────────────
 
+// CDK virtual-scroll viewport — owns its own scroll. flex:1 gives it height
+// in the column layout. The content wrapper is absolutely positioned, so
+// padding here would be ignored by rows; row gutters live on .list-item.
 .list-items {
-  list-style: none;
-  padding: 8px;
-  margin: 0;
-  overflow-y: auto;
   flex: 1;
+  width: 100%;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
 
 .list-item {
+  // Fixed height is mandatory for fixed-size virtual scroll. Row total
+  // (height + margin-bottom = 64 + 8) MUST equal the viewport's itemSize (72).
+  height: 64px;
+  box-sizing: border-box;
+  margin: 0 8px 8px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -72,7 +91,6 @@
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
   border: 1px solid transparent;
-  margin-bottom: 4px;
   position: relative;
 
   &:hover {

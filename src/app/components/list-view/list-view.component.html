@@ -30,9 +30,11 @@
     <p class="empty-sub">Try widening the date range or magnitude range.</p>
   </div>
 
-  <!-- Earthquake rows -->
-  <ul class="list-items" role="list" *ngIf="earthquakes.length">
-    <li *ngFor="let eq of earthquakes; trackBy: trackById"
+  <!-- Earthquake rows — virtualized so only visible rows are in the DOM.
+       itemSize must match the fixed .list-item row height in the SCSS. -->
+  <cdk-virtual-scroll-viewport *ngIf="earthquakes.length"
+      class="list-items" role="list" itemSize="72" minBufferPx="288" maxBufferPx="576">
+    <div *cdkVirtualFor="let eq of earthquakes; trackBy: trackById"
         class="list-item"
         [class.selected]="eq.id === selectedId"
         (click)="onItemClick(eq)"
@@ -44,7 +46,7 @@
         [attr.aria-pressed]="eq.id === selectedId">
 
       <!-- Magnitude badge -->
-      <div class="item-mag" [class]="getMagClass(eq.magnitude)" aria-hidden="true">
+      <div class="item-mag" [class]="eq.magnitude | magnitudeClass" aria-hidden="true">
         <span class="mag-dot"></span>
         <span class="mag-val">M{{ eq.magnitude | number:'1.1-1' }}</span>
       </div>
@@ -66,7 +68,7 @@
         aria-label="Zoom map to {{ eq.place }}" tabindex="-1">
         → Map
       </button>
-    </li>
-  </ul>
+    </div>
+  </cdk-virtual-scroll-viewport>
 
 </div>

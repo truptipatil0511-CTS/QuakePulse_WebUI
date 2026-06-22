@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ThemeService } from './services/theme.service';
 import { AppStateService } from './services/app-state.service';
@@ -8,7 +8,8 @@ import { ViewMode } from './models/earthquake.model';
   selector: 'app-root',
   templateUrl: './app.html',
   standalone: false,
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App implements OnInit {
   viewMode$!: Observable<ViewMode>;

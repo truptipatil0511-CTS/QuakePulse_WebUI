@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { EarthquakeService } from '../../services/earthquake.service';
@@ -7,20 +7,26 @@ import { EarthquakeService } from '../../services/earthquake.service';
   selector: 'app-status-bar',
   templateUrl: './status-bar.component.html',
   styleUrls: ['./status-bar.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatusBarComponent implements OnInit, OnDestroy {
   lastUpdated: Date | null = null;
   loading = false;
   private destroy$ = new Subject<void>();
 
-  constructor(private earthquakeService: EarthquakeService) {}
+  constructor(
+    private earthquakeService: EarthquakeService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
+    // markForCheck() required: these fields are set from subscriptions, which
+    // OnPush does not detect on its own.
     this.earthquakeService.lastUpdated$.pipe(takeUntil(this.destroy$))
-      .subscribe(d => this.lastUpdated = d);
+      .subscribe(d => { this.lastUpdated = d; this.cdr.markForCheck(); });
     this.earthquakeService.loading$.pipe(takeUntil(this.destroy$))
-      .subscribe(l => this.loading = l);
+      .subscribe(l => { this.loading = l; this.cdr.markForCheck(); });
   }
 
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }

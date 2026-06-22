@@ -1,6 +1,11 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'timeAgo', pure: false, standalone: false })
+// Pure so it only recomputes when its input changes (i.e. on data reload),
+// instead of on every change-detection cycle. Previously pure:false caused
+// transform() to run for every bound row on every CD tick — a major hot path
+// in the list view. The "Xm ago" label therefore refreshes on data reload,
+// not continuously; acceptable for an earthquake feed.
+@Pipe({ name: 'timeAgo', pure: true, standalone: false })
 export class TimeAgoPipe implements PipeTransform {
   transform(value: string | null): string {
     if (!value) return '—';

@@ -1,69 +1,34 @@
+// The component host is a flex child of .main-content (display:flex,
+// column). Make it a flex item that grows to fill that column AND a
+// flex container so .map-wrapper inside it has a real flex context.
+:host {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+// Fill .main-content exactly. flex:1 + min-height:0 lets the wrapper
+// shrink/grow to its flex parent without overflowing it (the default
+// min-height:auto would let content push it past .main-content's height).
 .map-wrapper {
   position: relative;
-  flex: 1;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   background: var(--bg-primary);
 }
 
 .map-container {
-  width: 100%;
-  height: 100%;
-  &.hidden { visibility: hidden; }
-}
-
-// ── No-key placeholder ───────────────────────
-
-.map-no-key {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: var(--bg-primary);
-  z-index: 10;
+  width: 100%;
+  height: 100%;
 }
 
-.no-key-card {
-  text-align: center;
-  max-width: 420px;
-  padding: 32px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 4px 24px var(--shadow);
-}
-
-.no-key-icon { font-size: 48px; margin-bottom: 12px; }
-
-.no-key-card h2 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 10px;
-}
-
-.no-key-card p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0 0 12px;
-  line-height: 1.5;
-}
-
-.no-key-snippet {
-  display: block;
-  padding: 8px 14px;
-  background: var(--bg-overlay);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 13px;
-  color: var(--accent);
-  margin: 0 0 12px;
-}
-
-.no-key-sub { font-size: 12px !important; color: var(--text-secondary) !important; }
-
-// ── Loading overlay ──────────────────────────
+// ── Loading overlay ──────────────────────────────────────────
 
 .map-loading {
   position: absolute;
@@ -95,7 +60,36 @@
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-// ── Map controls ─────────────────────────────
+// ── Init-error fallback ──────────────────────────────────────
+
+.map-init-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg-primary);
+  z-index: 30;
+}
+
+.init-error-card {
+  text-align: center;
+  max-width: 420px;
+  padding: 28px 32px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px var(--shadow);
+
+  h2 { font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 4px 0 8px; }
+  p  { font-size: 13px; color: var(--text-secondary); margin: 0 0 8px; line-height: 1.45; }
+  .init-error-sub { font-size: 12px; opacity: 0.85; }
+}
+
+.init-error-icon { font-size: 38px; }
+
+// ── Map control clusters ─────────────────────────────────────
 
 .map-controls {
   position: absolute;
@@ -105,17 +99,18 @@
 }
 
 .map-controls--zoom {
-  top: 16px;
-  left: 16px;
+  top: 14px;
+  left: 14px;
   flex-direction: column;
 }
 
 .map-controls--style {
-  bottom: 16px;
-  left: 16px;
+  bottom: 18px;
+  left: 14px;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 6px;
+  max-width: calc(100% - 28px);
 }
 
 .map-ctrl-btn {
@@ -149,19 +144,153 @@
   cursor: pointer;
   box-shadow: 0 1px 6px var(--shadow);
   transition: all 0.15s;
+  white-space: nowrap;
 
   &:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
   &.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   &:focus-visible { outline: 2px solid var(--accent); }
 }
 
-// ── Azure Maps popup overrides ───────────────
+// ── Mobile responsive tweaks ─────────────────────────────────
+
+@media (max-width: 640px) {
+  .map-controls--zoom { top: 10px; left: 10px; }
+  .map-controls--style {
+    bottom: 12px;
+    left: 10px;
+    max-width: calc(100% - 20px);
+    .map-style-btn { padding: 5px 8px; font-size: 11px; }
+  }
+  .map-ctrl-btn { width: 32px; height: 32px; font-size: 16px; }
+}
+
+// ── Heatmap legend (top-right, only while heatmap on) ────────
+
+.map-heatmap-legend {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  width: 180px;
+  padding: 10px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px var(--shadow);
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.hl-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.hl-sub {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+
+  strong { color: var(--text-primary); font-weight: 600; }
+}
+
+.hl-bands {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+}
+
+// Each swatch is a light→dark gradient of the band hue — mirroring the map:
+// the hue is the magnitude category, the gradient shows shade = density.
+.hl-swatch {
+  width: 34px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+
+  &.minor    { background: linear-gradient(90deg, #abebc6, #1e8449); }
+  &.moderate { background: linear-gradient(90deg, #fad7a0, #b9770e); }
+  &.strong   { background: linear-gradient(90deg, #f5b7b1, #b03a2e); }
+  &.major    { background: linear-gradient(90deg, #d98880, #641e16); }
+}
+
+.hl-label { color: var(--text-secondary); }
+
+.hl-density {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+
+  .hl-density-label { font-size: 9.5px; color: var(--text-secondary); white-space: nowrap; }
+
+  .hl-density-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 3px;
+    // Neutral light→dark to convey density independent of any single hue.
+    background: linear-gradient(90deg, rgba(127,127,127,0.15), rgba(60,60,60,0.95));
+  }
+}
+
+@media (max-width: 640px) {
+  .map-heatmap-legend { width: 150px; top: 10px; right: 10px; font-size: 10px; }
+}
+
+// ── MapLibre popup overrides (themed light/dark via vars) ────
+
+:host ::ng-deep .maplibregl-popup.qp-map-popup {
+  z-index: 50;
+
+  .maplibregl-popup-content {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    border-radius: 12px;
+    overflow: visible;
+  }
+
+  .maplibregl-popup-tip {
+    border-top-color: var(--bg-surface);
+    border-bottom-color: var(--bg-surface);
+  }
+
+  .maplibregl-popup-close-button {
+    top: 4px;
+    right: 6px;
+    background: var(--bg-overlay);
+    color: var(--text-secondary);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+    line-height: 22px;
+    padding: 0;
+    z-index: 1;
+
+    &:hover { background: var(--border); }
+  }
+}
+
+// ── Popup content (themed) ───────────────────────────────────
 
 :host ::ng-deep .map-popup {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
   overflow: hidden;
   min-width: 220px;
   font-family: inherit;
@@ -173,10 +302,10 @@
   justify-content: space-between;
   padding: 10px 14px;
 
-  &--minor { background: rgba(46,204,113,0.15); }
+  &--minor    { background: rgba(46,204,113,0.15); }
   &--moderate { background: rgba(243,156,18,0.15); }
-  &--strong { background: rgba(231,76,60,0.15); }
-  &--major { background: rgba(146,43,33,0.2); }
+  &--strong   { background: rgba(231,76,60,0.15); }
+  &--major    { background: rgba(146,43,33,0.20); }
 }
 
 :host ::ng-deep .popup-mag-val {
@@ -193,9 +322,7 @@
   color: var(--text-secondary);
 }
 
-:host ::ng-deep .popup-body {
-  padding: 10px 14px 6px;
-}
+:host ::ng-deep .popup-body { padding: 10px 14px 6px; }
 
 :host ::ng-deep .popup-place,
 :host ::ng-deep .popup-time,
@@ -216,7 +343,17 @@
   text-decoration: none;
   border-top: 1px solid var(--border);
   transition: background 0.15s;
+
   &:hover { background: var(--accent); color: #fff; }
 }
 
-:host ::ng-deep .atlas-map-copyright { display: none; }
+// MapLibre attribution control: lighten in dark theme for readability
+:host ::ng-deep .maplibregl-ctrl-attrib {
+  background: rgba(255,255,255,0.75) !important;
+}
+:host-context(body.dark-theme) ::ng-deep .maplibregl-ctrl-attrib {
+  background: rgba(20,22,32,0.75) !important;
+  color: #ccc !important;
+
+  a { color: var(--accent) !important; }
+}

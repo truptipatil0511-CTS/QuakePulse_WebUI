@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ThemeService } from '../../services/theme.service';
 import { AppStateService } from '../../services/app-state.service';
@@ -9,7 +9,8 @@ import { ThemeMode } from '../../models/earthquake.model';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
-  standalone: false
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeaderComponent implements OnInit {
   theme$!: Observable<ThemeMode>;
