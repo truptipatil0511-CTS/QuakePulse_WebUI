@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ThemeService } from './services/theme.service';
 import { AppStateService } from './services/app-state.service';
+import { LoggerService } from './services/logger.service';
 import { ViewMode } from './models/earthquake.model';
 
 @Component({
@@ -17,12 +18,14 @@ export class App implements OnInit {
 
   constructor(
     private themeService: ThemeService,
-    public stateService: AppStateService
+    public stateService: AppStateService,
+    private logger: LoggerService
   ) {}
 
   ngOnInit(): void {
     this.viewMode$ = this.stateService.viewMode$;
     this.sidebarOpen$ = this.stateService.sidebarOpen$;
     this.themeService.applyTheme(this.themeService.isDark ? 'dark' : 'light');
+    this.logger.logInfo('QuakePulse UI initialized');
   }
 }

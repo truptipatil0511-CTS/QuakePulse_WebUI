@@ -205,3 +205,25 @@ Expected Output:
 - Any necessary Angular/data transformation fixes
 - Best practice recommendation (density vs category-based heatmap)
 -------------------------------------------------------------------------------------------------------------------------------------------------
+Improvements
+Create a minimal Angular LoggerService that sends frontend logs to POST /api/logs.
+
+Use existing backend contract:
+- message (string)
+- level (Info | Warning | Error)
+- correlationId (string)
+- timestamp (Date)
+
+Requirements:
+- Methods: logInfo, logWarning, logError
+- Auto-generate correlationId using crypto.randomUUID()
+- Set timestamp automatically
+- Use HttpClient
+- Fire-and-forget logging (do not block UI)
+- Handle errors silently (fallback to console)
+- Keep implementation lightweight and production-ready
+
+Provide:
+- LoggerService
+- Interface for request model
+- Example usage

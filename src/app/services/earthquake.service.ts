@@ -4,6 +4,7 @@ import { Observable, of, BehaviorSubject, Subject } from 'rxjs';
 import { map, catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { Earthquake, EarthquakeStats } from '../models/earthquake.model';
 import { AppStateService } from './app-state.service';
+import { LoggerService } from './logger.service';
 import { MOCK_EARTHQUAKES } from '../models/mock-data';
 import { environment } from '../../environments/environment';
 
@@ -61,7 +62,11 @@ export class EarthquakeService {
 
   private reload$ = new Subject<void>();
 
-  constructor(private http: HttpClient, private state: AppStateService) {
+  constructor(
+    private http: HttpClient,
+    private state: AppStateService,
+    private logger: LoggerService
+  ) {
     // Filter changes trigger a reload. distinctUntilChanged needs a value
     // comparator: updateFilters() always emits a NEW object reference, so the
     // default reference check never dedupes and identical filters would
@@ -92,6 +97,7 @@ export class EarthquakeService {
         switchMap(() => this.fetch())
       )
       .subscribe(({ source, events }) => {
+        this.logger.logInfo(`Loaded ${events.length} earthquakes from ${source}`);
         this.sourceSubject.next(source);
         // Copy before sorting — never mutate the caller's array (notably the
         // shared MOCK_EARTHQUAKES constant on the fallback path).
@@ -119,6 +125,7 @@ export class EarthquakeService {
 
     if (!environment.apiBaseUrl) {
       console.warn('[EarthquakeService] No API base URL configured — using mock data');
+      this.logger.logWarning('No API base URL configured — falling back to mock data');
       this.errorSubject.next('No API base URL configured');
       return of({ source: 'mock', events: MOCK_EARTHQUAKES });
     }
@@ -140,6 +147,9 @@ export class EarthquakeService {
         })),
         catchError(err => {
           console.error('[EarthquakeService] API call failed — falling back to mock', err);
+          this.logger.logError(
+            `Earthquake API call failed (${err?.status ?? 'unknown'}): ${err?.message ?? 'failure'}`
+          );
           this.errorSubject.next(
             err?.status === 0
               ? 'Cannot reach backend. Check that QuakePulse_WebService is running.'
