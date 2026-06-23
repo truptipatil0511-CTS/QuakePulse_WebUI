@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://quakepulse-apim-prod-cin-01.azure-api.net/earthquake'
+  apiBaseUrl: 'https://quakepulse-endpoint-amf5a4f5hwefb6fv.a01.azurefd.net'
 };
